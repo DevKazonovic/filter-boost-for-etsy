@@ -91,7 +91,11 @@ Filter Boost adds a fixed set of Etsy search filter parameters to Etsy search re
 | `webNavigation` | The extension needs to know when a navigation to an Etsy search URL starts so it can add the missing filter parameters before the page loads. Events are restricted to the etsy.com host permission. No other navigation is observed. |
 | `*://*.etsy.com/*` (host access) | The extension only acts on Etsy search result pages. This is the narrowest host pattern that covers etsy.com and its localised subdomains. No other site is accessed. |
 
-**Remote code:** No, the extension does not use remote code. All logic ships in the package.
+**Remote code:** select "No, I am not using remote code". If a justification box appears, use:
+
+```text
+All logic ships inside the package. The extension loads no external scripts, uses no eval or new Function, embeds no remote modules, and makes no network requests of any kind.
+```
 
 **Data usage:** Select "does not collect or use user data" and tick the three certification boxes. The
 extension collects nothing: no personally identifiable information, no health, financial, authentication,
