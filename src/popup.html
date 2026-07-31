@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1 data-i18n="popupTitle"></h1>
+      <p class="subtitle" data-i18n="popupSubtitle"></p>
+    </header>
+
+    <section class="status" id="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="status-text" id="statusText"></span>
+      <button type="button" class="apply" id="apply" data-i18n="applyNow" hidden></button>
+    </section>
+
+    <label class="row master" for="master">
+      <span class="row-label">
+        <span class="row-title" data-i18n="masterLabel"></span>
+        <span class="row-meta" id="masterState"></span>
+      </span>
+      <input type="checkbox" id="master" class="switch-input" role="switch" />
+      <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+    </label>
+
+    <ul class="filters" id="filters"></ul>
+
+    <p class="note" data-i18n="popupNote"></p>
+
+    <footer>
+      <span id="shortcut"></span>
+      <span class="disclaimer" data-i18n="disclaimer"></span>
+    </footer>
+
+    <template id="filterRow">
+      <li>
+        <label class="row filter">
+          <span class="row-label">
+            <span class="row-title"></span>
+            <code></code>
+          </span>
+          <input type="checkbox" class="switch-input" role="switch" />
+          <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+      </li>
+    </template>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "extName": {
+    "message": "Filter Boost for Etsy",
+    "description": "Extension name shown in the Chrome Web Store and the toolbar."
+  },
+  "extDescription": {
+    "message": "Applies your preferred Etsy search filters automatically on every new search, with one click to turn them off.",
+    "description": "Store listing description, 132 characters maximum."
+  },
+  "commandToggle": {
+    "message": "Turn the filters on or off",
+    "description": "Keyboard shortcut description."
+  },
+  "popupTitle": {
+    "message": "Filter Boost for Etsy"
+  },
+  "popupSubtitle": {
+    "message": "Runs on Etsy search results only."
+  },
+  "masterLabel": {
+    "message": "Force filters"
+  },
+  "masterOn": {
+    "message": "On for every new search"
+  },
+  "masterOff": {
+    "message": "Off, Etsy searches untouched"
+  },
+  "filterExplicit": {
+    "message": "Explicit results"
+  },
+  "filterBestSeller": {
+    "message": "Bestseller"
+  },
+  "filterInstantDownload": {
+    "message": "Instant download"
+  },
+  "statusActive": {
+    "message": "Filters are active on this search"
+  },
+  "statusMissing": {
+    "message": "This search is missing your filters"
+  },
+  "statusNoFilters": {
+    "message": "Pick at least one filter below"
+  },
+  "statusDisabled": {
+    "message": "Filters are turned off"
+  },
+  "statusNotSearch": {
+    "message": "Open an Etsy search to see its status"
+  },
+  "applyNow": {
+    "message": "Apply"
+  },
+  "popupNote": {
+    "message": "Filters are added when you start a new search. Change them on the results page and they stay changed until your next search."
+  },
+  "shortcutHint": {
+    "message": "Shortcut: $SHORTCUT$",
+    "placeholders": {
+      "shortcut": {
+        "content": "$1",
+        "example": "Alt+Shift+F"
+      }
+    }
+  },
+  "shortcutUnset": {
+    "message": "No shortcut set (chrome://extensions/shortcuts)"
+  },
+  "disclaimer": {
+    "message": "Not affiliated with Etsy, Inc. Etsy is a trademark of Etsy, Inc."
+  }
+}

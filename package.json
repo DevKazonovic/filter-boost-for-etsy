@@ -1,0 +1,22 @@
+{
+  "name": "filter-boost-for-etsy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension that applies your preferred Etsy search filters automatically on every new search.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevKazonovic/filter-boost-for-etsy.git"
+  },
+  "scripts": {
+    "test": "node tests/unit.mjs",
+    "e2e": "node tests/e2e.mjs",
+    "icons": "node scripts/generate-icons.js",
+    "assets": "node scripts/generate-store-assets.js",
+    "build": "node scripts/build.js",
+    "verify": "npm test && npm run e2e && npm run build"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

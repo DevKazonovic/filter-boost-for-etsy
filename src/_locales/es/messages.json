@@ -1,0 +1,71 @@
+{
+  "extName": {
+    "message": "Filter Boost for Etsy"
+  },
+  "extDescription": {
+    "message": "Aplica automáticamente tus filtros de búsqueda de Etsy en cada búsqueda nueva, y los desactivas con un solo clic."
+  },
+  "commandToggle": {
+    "message": "Activar o desactivar los filtros"
+  },
+  "popupTitle": {
+    "message": "Filter Boost for Etsy"
+  },
+  "popupSubtitle": {
+    "message": "Solo funciona en los resultados de búsqueda de Etsy."
+  },
+  "masterLabel": {
+    "message": "Forzar filtros"
+  },
+  "masterOn": {
+    "message": "Activo en cada búsqueda nueva"
+  },
+  "masterOff": {
+    "message": "Inactivo, búsquedas de Etsy sin cambios"
+  },
+  "filterExplicit": {
+    "message": "Resultados explícitos"
+  },
+  "filterBestSeller": {
+    "message": "Más vendido"
+  },
+  "filterInstantDownload": {
+    "message": "Descarga instantánea"
+  },
+  "statusActive": {
+    "message": "Los filtros están activos en esta búsqueda"
+  },
+  "statusMissing": {
+    "message": "A esta búsqueda le faltan tus filtros"
+  },
+  "statusNoFilters": {
+    "message": "Elige al menos un filtro abajo"
+  },
+  "statusDisabled": {
+    "message": "Los filtros están desactivados"
+  },
+  "statusNotSearch": {
+    "message": "Abre una búsqueda de Etsy para ver su estado"
+  },
+  "applyNow": {
+    "message": "Aplicar"
+  },
+  "popupNote": {
+    "message": "Los filtros se añaden al empezar una búsqueda nueva. Si los cambias en la página de resultados, se mantienen así hasta tu siguiente búsqueda."
+  },
+  "shortcutHint": {
+    "message": "Atajo: $SHORTCUT$",
+    "placeholders": {
+      "shortcut": {
+        "content": "$1",
+        "example": "Alt+Shift+F"
+      }
+    }
+  },
+  "shortcutUnset": {
+    "message": "Sin atajo configurado (chrome://extensions/shortcuts)"
+  },
+  "disclaimer": {
+    "message": "Sin afiliación con Etsy, Inc. Etsy es una marca registrada de Etsy, Inc."
+  }
+}

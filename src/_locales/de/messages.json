@@ -1,0 +1,71 @@
+{
+  "extName": {
+    "message": "Filter Boost for Etsy"
+  },
+  "extDescription": {
+    "message": "Wendet deine bevorzugten Etsy-Suchfilter bei jeder neuen Suche automatisch an, abschaltbar mit einem Klick."
+  },
+  "commandToggle": {
+    "message": "Filter ein- oder ausschalten"
+  },
+  "popupTitle": {
+    "message": "Filter Boost for Etsy"
+  },
+  "popupSubtitle": {
+    "message": "Läuft nur auf Etsy-Suchergebnisseiten."
+  },
+  "masterLabel": {
+    "message": "Filter erzwingen"
+  },
+  "masterOn": {
+    "message": "Aktiv bei jeder neuen Suche"
+  },
+  "masterOff": {
+    "message": "Aus, Etsy-Suchen bleiben unberührt"
+  },
+  "filterExplicit": {
+    "message": "Explizite Ergebnisse"
+  },
+  "filterBestSeller": {
+    "message": "Bestseller"
+  },
+  "filterInstantDownload": {
+    "message": "Sofort-Download"
+  },
+  "statusActive": {
+    "message": "Filter sind bei dieser Suche aktiv"
+  },
+  "statusMissing": {
+    "message": "Dieser Suche fehlen deine Filter"
+  },
+  "statusNoFilters": {
+    "message": "Wähle unten mindestens einen Filter"
+  },
+  "statusDisabled": {
+    "message": "Filter sind ausgeschaltet"
+  },
+  "statusNotSearch": {
+    "message": "Öffne eine Etsy-Suche, um den Status zu sehen"
+  },
+  "applyNow": {
+    "message": "Anwenden"
+  },
+  "popupNote": {
+    "message": "Filter werden zu Beginn einer neuen Suche gesetzt. Änderst du sie auf der Ergebnisseite, bleiben sie so bis zur nächsten Suche."
+  },
+  "shortcutHint": {
+    "message": "Kurzbefehl: $SHORTCUT$",
+    "placeholders": {
+      "shortcut": {
+        "content": "$1",
+        "example": "Alt+Shift+F"
+      }
+    }
+  },
+  "shortcutUnset": {
+    "message": "Kein Kurzbefehl gesetzt (chrome://extensions/shortcuts)"
+  },
+  "disclaimer": {
+    "message": "Nicht mit Etsy, Inc. verbunden. Etsy ist eine Marke von Etsy, Inc."
+  }
+}

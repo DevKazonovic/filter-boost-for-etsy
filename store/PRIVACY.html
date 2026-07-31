@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy policy, Filter Boost for Etsy</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        max-inline-size: 42rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        line-height: 1.6;
+        color: #1b1b1f;
+        background: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { color: #ededf0; background: #161619; }
+        code { background: #26262b; }
+      }
+      h1 { font-size: 1.6rem; margin-block-end: 0.25rem; }
+      h2 { font-size: 1.05rem; margin-block-start: 2rem; }
+      .updated { color: #6b6f76; font-size: 0.9rem; margin-block-start: 0; }
+      ul { padding-inline-start: 1.2rem; }
+      li { margin-block-end: 0.35rem; }
+      code { background: #f2f2f4; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.9em; }
+      footer { margin-block-start: 2.5rem; color: #6b6f76; font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Privacy policy</h1>
+    <p class="updated">Filter Boost for Etsy, version 1.0.0</p>
+
+    <h2>The short version</h2>
+    <p>
+      Filter Boost collects nothing. There is no account, no analytics, no tracking, no remote server
+      and no remote code. Nothing you do in the browser is transmitted anywhere.
+    </p>
+
+    <h2>What the extension stores</h2>
+    <ul>
+      <li>
+        <strong>Your settings.</strong> The master on/off switch and one flag per filter, kept in Chrome's
+        extension storage. If you are signed into Chrome, Chrome itself syncs them to your other devices.
+        They are never sent to the developer.
+      </li>
+      <li>
+        <strong>A short-lived note of the current search term per tab.</strong> This is what stops the
+        extension from re-adding a filter you just removed. It lives in session storage, is discarded when
+        the tab closes, and is cleared when the browser restarts.
+      </li>
+    </ul>
+
+    <h2>What the extension can see</h2>
+    <p>
+      The extension is granted access to <code>etsy.com</code> only. It observes the start of navigations
+      to Etsy search URLs so it can add your chosen filter parameters before the page loads. It has no
+      content script, never reads the contents of any page, and cannot see any other website.
+    </p>
+
+    <h2>What it does not do</h2>
+    <ul>
+      <li>No personally identifiable information, no location, no authentication data, no financial data.</li>
+      <li>No browsing history collection and no logging of your searches.</li>
+      <li>No selling or sharing of data, because none is collected.</li>
+      <li>No advertising and no third-party services of any kind.</li>
+    </ul>
+
+    <h2>Removing your data</h2>
+    <p>
+      Uninstalling the extension removes its stored settings. You can also clear them at any time from
+      <code>chrome://extensions</code>.
+    </p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy can be sent to the support address on the Chrome Web Store listing.</p>
+
+    <footer>
+      Not affiliated with, endorsed by or sponsored by Etsy, Inc. Etsy is a trademark of Etsy, Inc.
+    </footer>
+  </body>
+</html>
