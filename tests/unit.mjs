@@ -1,5 +1,5 @@
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -142,7 +142,7 @@ check('normalizeSettings drops unknown keys', settingsLib.normalizeSettings({ en
 
 console.log('\n--- locales and manifest ---');
 
-const LOCALES = ['en', 'fr', 'es', 'de'];
+const LOCALES = (await readdir(path.join(SRC, '_locales'))).filter((name) => !name.startsWith('.')).sort();
 const readJson = async (...parts) => JSON.parse(await readFile(path.join(SRC, ...parts), 'utf8'));
 const messages = Object.fromEntries(await Promise.all(LOCALES.map(async (l) => [l, await readJson('_locales', l, 'messages.json')])));
 const manifest = await readJson('manifest.json');

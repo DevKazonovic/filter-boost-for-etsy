@@ -16,7 +16,7 @@ Forced parameters, each individually switchable:
 ```text
 src/            the extension itself, this folder is what gets loaded and zipped
   lib/          URL and settings logic shared by the service worker and the popup
-  _locales/     en, fr, es, de
+  _locales/     en (i18n is wired up, dropping in another locale needs no code change)
 tests/          unit.mjs (stubbed Chrome APIs) and e2e.mjs (real Chrome via puppeteer)
 scripts/        icon generation, store asset generation, validate and package
 store/          listing copy, privacy policy, generated store graphics per locale
@@ -71,9 +71,9 @@ to see search navigations. No content script, no page access, no data collection
 ## Publishing
 
 `store/LISTING.md` holds the copy-paste listing text, permission justifications, data-safety answers
-and reviewer notes. Assets are generated into `store/assets/<locale>/`, six upload files per locale
-plus the shared store icon, all 24-bit PNG with no alpha channel because the dashboard rejects
-alpha. `npm run assets` fails if any generated file still carries an alpha channel.
+and reviewer notes. Assets are generated into `store/assets/`, six upload files plus the store icon,
+all 24-bit PNG with no alpha channel because the dashboard rejects alpha. `npm run assets` fails if
+any generated file still carries an alpha channel.
 
 ## Licence
 

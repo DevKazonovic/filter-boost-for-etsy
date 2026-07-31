@@ -18,7 +18,7 @@ Applies your preferred Etsy search filters automatically on every new search, wi
 ```
 
 **Category:** Shopping
-**Language:** English (with French, Spanish and German translations bundled)
+**Language:** English
 
 ### Detailed description
 
@@ -53,41 +53,27 @@ Note: "Explicit results" is Etsy's own search filter. Filter Boost only sets it 
 Not affiliated with, endorsed by or sponsored by Etsy, Inc. Etsy is a trademark of Etsy, Inc.
 ```
 
-## Localised short descriptions
-
-Bundled in `_locales`, Chrome shows these automatically in the matching store locale.
-
-| Locale | Text |
-| --- | --- |
-| fr | Applique automatiquement vos filtres de recherche Etsy préférés à chaque nouvelle recherche, désactivables en un clic. |
-| es | Aplica automáticamente tus filtros de búsqueda de Etsy en cada búsqueda nueva, y los desactivas con un solo clic. |
-| de | Wendet deine bevorzugten Etsy-Suchfilter bei jeder neuen Suche automatisch an, abschaltbar mit einem Klick. |
-
 ## Graphic assets
 
 Every file is 1280x800 or the stated canvas size, 24-bit PNG with **no alpha channel**, which is what
 the dashboard requires. Promo videos are optional: leave both YouTube fields empty.
 
-The listing page has two sets of fields.
+The listing page splits these into **Global assets** and **Localized assets**. The item is English
+only, so upload everything under **Global** and leave the localized fields empty. If the form insists
+on a localized screenshot for English, upload the same files there.
 
-- **Global assets** are the fallback shown to everyone. Upload the `en/` set here.
-- **Localized assets** are shown to users browsing the store in that language. Pick the language from
-  the selector at the top of the listing page, then upload the matching folder. Skipping a language is
-  fine, it falls back to the global set.
+| Field | File | Size |
+| --- | --- | --- |
+| Store icon | `assets/store-icon-128.png` | 128x128 |
+| Screenshot 1 | `assets/screenshot-1-overview.png` | 1280x800 |
+| Screenshot 2 | `assets/screenshot-2-url.png` | 1280x800 |
+| Screenshot 3 | `assets/screenshot-3-controls.png` | 1280x800 |
+| Screenshot 4 | `assets/screenshot-4-behaviour.png` | 1280x800 |
+| Small promo tile | `assets/promo-small-440x280.png` | 440x280 |
+| Marquee promo tile | `assets/promo-marquee-1400x560.png` | 1400x560 |
 
-| Field | Global (en) | Localized (fr, es, de) | Size |
-| --- | --- | --- | --- |
-| Store icon | `assets/store-icon-128.png` | same file | 128x128 |
-| Screenshot 1 | `assets/en/screenshot-1-overview.png` | `assets/<locale>/screenshot-1-overview.png` | 1280x800 |
-| Screenshot 2 | `assets/en/screenshot-2-url.png` | `assets/<locale>/screenshot-2-url.png` | 1280x800 |
-| Screenshot 3 | `assets/en/screenshot-3-controls.png` | `assets/<locale>/screenshot-3-controls.png` | 1280x800 |
-| Screenshot 4 | `assets/en/screenshot-4-behaviour.png` | `assets/<locale>/screenshot-4-behaviour.png` | 1280x800 |
-| Small promo tile | `assets/en/promo-small-440x280.png` | `assets/<locale>/promo-small-440x280.png` | 440x280 |
-| Marquee promo tile | `assets/en/promo-marquee-1400x560.png` | `assets/<locale>/promo-marquee-1400x560.png` | 1400x560 |
-
-The screenshots contain the real popup rendered in each language, not translated captions over an
-English UI. `popup-light.png` and `popup-dark.png` in each folder are the raw captures, they are not
-uploaded anywhere.
+`popup-light.png` and `popup-dark.png` are the raw popup captures the screenshots are built from,
+they are not uploaded anywhere.
 
 ## Privacy practices tab
 

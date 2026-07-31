@@ -6,7 +6,7 @@ const { stripAlpha, describe } = require('./png');
 const ROOT = path.resolve(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const OUT = path.join(ROOT, 'store', 'assets');
-const LOCALES = ['en', 'fr', 'es', 'de'];
+const LOCALES = ['en'];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const dataUri = (file) => `data:image/png;base64,${fs.readFileSync(file).toString('base64')}`;
@@ -28,57 +28,6 @@ const COPY = {
     ],
     tileSmall: 'Your Etsy search filters, applied automatically.',
     tileMarquee: 'Bestseller, instant download and explicit results on every new search.',
-  },
-  fr: {
-    overviewTitle: 'Vos filtres Etsy,<br />appliqués pour vous',
-    overviewSub: 'Meilleure vente, téléchargement immédiat et résultats explicites à chaque nouvelle recherche.',
-    urlTitle: 'Vous cherchez. Il ajoute le reste.',
-    urlTyped: 'Ce que vous tapez',
-    urlLoaded: 'Ce qui se charge',
-    controlsTitle: 'Un bouton,<br />ou trois',
-    controlsSub: "Désactivez tout depuis la barre d'outils, ou choisissez exactement quels filtres sont forcés.",
-    behaviourTitle: 'Il ne vous gêne jamais',
-    behaviourPoints: [
-      'Décochez un filtre sur la page de résultats : il le reste jusqu\'à votre prochaine recherche.',
-      'Actif uniquement sur les résultats de recherche Etsy. Fiches, boutiques et autres sites intacts.',
-      'Aucun compte, aucun suivi, aucune collecte. Rien ne quitte votre navigateur.',
-    ],
-    tileSmall: 'Vos filtres de recherche Etsy, appliqués automatiquement.',
-    tileMarquee: 'Meilleure vente, téléchargement immédiat et résultats explicites à chaque nouvelle recherche.',
-  },
-  es: {
-    overviewTitle: 'Tus filtros de Etsy,<br />ya aplicados',
-    overviewSub: 'Más vendido, descarga instantánea y resultados explícitos en cada búsqueda nueva.',
-    urlTitle: 'Tú buscas. Él pone el resto.',
-    urlTyped: 'Lo que escribes',
-    urlLoaded: 'Lo que se carga',
-    controlsTitle: 'Un interruptor,<br />o tres',
-    controlsSub: 'Desactiva todo desde la barra de herramientas, o elige exactamente qué filtros se fuerzan.',
-    behaviourTitle: 'No se mete en tu camino',
-    behaviourPoints: [
-      'Desmarca un filtro en la página de resultados y sigue así hasta tu próxima búsqueda.',
-      'Solo funciona en resultados de búsqueda de Etsy. Las fichas, las tiendas y el resto de webs quedan intactas.',
-      'Sin cuenta, sin seguimiento, sin recopilación de datos. Nada sale de tu navegador.',
-    ],
-    tileSmall: 'Tus filtros de búsqueda de Etsy, aplicados automáticamente.',
-    tileMarquee: 'Más vendido, descarga instantánea y resultados explícitos en cada búsqueda nueva.',
-  },
-  de: {
-    overviewTitle: 'Deine Etsy-Filter,<br />automatisch gesetzt',
-    overviewSub: 'Bestseller, Sofort-Download und explizite Ergebnisse bei jeder neuen Suche.',
-    urlTitle: 'Du suchst. Es ergänzt den Rest.',
-    urlTyped: 'Was du tippst',
-    urlLoaded: 'Was geladen wird',
-    controlsTitle: 'Ein Schalter,<br />oder drei',
-    controlsSub: 'Schalte alles über die Symbolleiste aus, oder wähle genau, welche Filter erzwungen werden.',
-    behaviourTitle: 'Es bleibt dir aus dem Weg',
-    behaviourPoints: [
-      'Entferne einen Filter auf der Ergebnisseite, er bleibt bis zur nächsten Suche entfernt.',
-      'Läuft nur auf Etsy-Suchergebnissen. Angebote, Shops und alle anderen Websites bleiben unberührt.',
-      'Kein Konto, kein Tracking, keine Datenerfassung. Nichts verlässt deinen Browser.',
-    ],
-    tileSmall: 'Deine Etsy-Suchfilter, automatisch angewendet.',
-    tileMarquee: 'Bestseller, Sofort-Download und explizite Ergebnisse bei jeder neuen Suche.',
   },
 };
 
@@ -253,7 +202,7 @@ async function popupShot(browser, popupUrl, locale, messages, scheme, file) {
   for (const locale of LOCALES) {
     const copy = COPY[locale];
     const messages = JSON.parse(fs.readFileSync(path.join(SRC, '_locales', locale, 'messages.json'), 'utf8'));
-    const dir = path.join(OUT, locale);
+    const dir = LOCALES.length === 1 ? OUT : path.join(OUT, locale);
 
     const light = await popupShot(browser, popupUrl, locale, messages, 'light', path.join(dir, 'popup-light.png'));
     const dark = await popupShot(browser, popupUrl, locale, messages, 'dark', path.join(dir, 'popup-dark.png'));
