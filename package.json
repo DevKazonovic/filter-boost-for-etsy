@@ -9,12 +9,14 @@
     "url": "https://github.com/DevKazonovic/filter-boost-for-etsy.git"
   },
   "scripts": {
+    "dev": "node scripts/dev.js",
     "test": "node tests/unit.mjs",
     "e2e": "node tests/e2e.mjs",
     "icons": "node scripts/generate-icons.js",
     "assets": "node scripts/generate-store-assets.js",
     "build": "node scripts/build.js",
-    "verify": "npm test && npm run e2e && npm run build"
+    "verify": "npm test && npm run e2e && npm run build",
+    "cws-token": "node scripts/cws-token.js"
   },
   "devDependencies": {
     "puppeteer": "^23.0.0"

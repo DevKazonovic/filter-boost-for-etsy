@@ -2,6 +2,7 @@ export const FILTERS = Object.freeze([
   Object.freeze({ id: 'explicit', param: 'explicit', value: '1', messageKey: 'filterExplicit' }),
   Object.freeze({ id: 'bestSeller', param: 'is_best_seller', value: 'true', messageKey: 'filterBestSeller' }),
   Object.freeze({ id: 'instantDownload', param: 'instant_download', value: 'true', messageKey: 'filterInstantDownload' }),
+  Object.freeze({ id: 'newest', param: 'order', value: 'date_desc', messageKey: 'filterNewest' }),
 ]);
 
 export const SEARCH_PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?search(?:\/|$)/;

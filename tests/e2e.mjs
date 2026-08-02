@@ -21,7 +21,7 @@ function check(name, actual, expected) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const ALL = 'explicit=1&is_best_seller=true&instant_download=true';
+const ALL = 'explicit=1&is_best_seller=true&instant_download=true&order=date_desc';
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': 'text/html' });
@@ -130,7 +130,7 @@ check('the extension can read the URL of an Etsy tab without the tabs permission
 
 console.log('\n--- per filter control ---');
 await worker.evaluate(() =>
-  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: false } } })
+  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: false, newest: false } } })
 );
 await sleep(400);
 check(
@@ -140,7 +140,7 @@ check(
 );
 
 await worker.evaluate(() =>
-  chrome.storage.sync.set({ settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true } } })
+  chrome.storage.sync.set({ settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } })
 );
 await sleep(400);
 check(
@@ -151,7 +151,7 @@ check(
 check('the badge reads OFF', await worker.evaluate(() => chrome.action.getBadgeText({})), 'OFF');
 
 await worker.evaluate(() =>
-  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true } } })
+  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } })
 );
 await sleep(400);
 check('the badge clears when re-enabled', await worker.evaluate(() => chrome.action.getBadgeText({})), '');
@@ -168,11 +168,16 @@ await popup.goto(popupUrl, { waitUntil: 'domcontentloaded' });
 await sleep(400);
 
 check('the popup title is localized', await popup.$eval('h1', (el) => el.textContent), 'Filter Boost for Etsy');
-check('every filter has its own row', await popup.$$eval('#filters li', (rows) => rows.length), 3);
+check('every filter has its own row', await popup.$$eval('#filters li', (rows) => rows.length), 4);
 check(
   'the rows are labelled and show their param',
   await popup.$$eval('#filters li', (rows) => rows.map((row) => `${row.querySelector('.row-title').textContent}|${row.querySelector('code').textContent}`)),
-  ['Explicit results|explicit=1', 'Bestseller|is_best_seller=true', 'Instant download|instant_download=true']
+  [
+    'Explicit results|explicit=1',
+    'Bestseller|is_best_seller=true',
+    'Instant download|instant_download=true',
+    'Newest first|order=date_desc',
+  ]
 );
 check(
   'all switches start on',
@@ -212,7 +217,7 @@ check('the status reports the off state', await popup.$eval('#statusText', (el) 
 
 console.log('\n--- live status and apply ---');
 await worker.evaluate(() =>
-  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true } } })
+  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } })
 );
 await sleep(300);
 await settledUrl(page, 'http://www.etsy.com/search?q=frames');
@@ -240,8 +245,40 @@ await sleep(1200);
 check(
   'apply adds the missing filters to the current tab',
   page.url(),
-  'http://www.etsy.com/search?q=frames&explicit=1&is_best_seller=true&instant_download=true'
+  'http://www.etsy.com/search?q=frames&explicit=1&is_best_seller=true&instant_download=true&order=date_desc'
 );
+
+console.log('\n--- update notice ---');
+await worker.evaluate(() =>
+  chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } })
+);
+await sleep(300);
+
+const noticePopup = await browser.newPage();
+watchPage(noticePopup, pageErrors);
+await noticePopup.goto(popupUrl, { waitUntil: 'domcontentloaded' });
+await sleep(400);
+check('no notice is shown on a fresh install', await noticePopup.$eval('#notice', (el) => el.hidden), true);
+
+await worker.evaluate(() => chrome.storage.local.set({ pendingNote: '1.1.0' }));
+await sleep(400);
+check('the badge marks a pending note', await worker.evaluate(() => chrome.action.getBadgeText({})), '•');
+
+await noticePopup.reload({ waitUntil: 'domcontentloaded' });
+await sleep(400);
+check('the popup shows the notice after an update', await noticePopup.$eval('#notice', (el) => el.hidden), false);
+check('the notice names the version', await noticePopup.$eval('#noticeTitle', (el) => el.textContent), 'New in 1.1.0');
+check('the notice explains the change', await noticePopup.$eval('#noticeText', (el) => el.textContent.includes('newest first')), true);
+
+await noticePopup.evaluate(() => document.getElementById('dismiss').click());
+await sleep(500);
+check('dismissing hides the notice', await noticePopup.$eval('#notice', (el) => el.hidden), true);
+check('dismissing clears the stored flag', await worker.evaluate(async () => (await chrome.storage.local.get('pendingNote')).pendingNote ?? null), null);
+check('dismissing clears the badge', await worker.evaluate(() => chrome.action.getBadgeText({})), '');
+
+await noticePopup.reload({ waitUntil: 'domcontentloaded' });
+await sleep(400);
+check('and it stays dismissed', await noticePopup.$eval('#notice', (el) => el.hidden), true);
 
 console.log('\n--- runtime health ---');
 check('the service worker logged no errors', workerErrors, []);

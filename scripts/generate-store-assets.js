@@ -14,11 +14,11 @@ const dataUri = (file) => `data:image/png;base64,${fs.readFileSync(file).toStrin
 const COPY = {
   en: {
     overviewTitle: 'Your Etsy filters,<br />applied for you',
-    overviewSub: 'Bestseller, instant download and explicit results go on every new search. Automatically.',
+    overviewSub: 'Bestseller, instant download, explicit results and newest first, on every new search.',
     urlTitle: 'You search. It adds the rest.',
     urlTyped: 'What you type',
     urlLoaded: 'What loads',
-    controlsTitle: 'One switch,<br />or three',
+    controlsTitle: 'One switch,<br />or four',
     controlsSub: 'Turn the whole thing off from the toolbar, or choose exactly which filters get forced.',
     behaviourTitle: 'It stays out of your way',
     behaviourPoints: [
@@ -27,7 +27,7 @@ const COPY = {
       'No account, no tracking, no data collection. Nothing leaves your browser.',
     ],
     tileSmall: 'Your Etsy search filters, applied automatically.',
-    tileMarquee: 'Bestseller, instant download and explicit results on every new search.',
+    tileMarquee: 'Bestseller, instant download, explicit results and newest first, on every new search.',
   },
 };
 
@@ -90,7 +90,7 @@ const urlStory = (copy) =>
         </div>
         <div>
           <div class="label">${copy.urlLoaded}</div>
-          <div class="bar"><span class="dot"></span><span class="url">etsy.com/search?q=stickers<span class="added">&amp;explicit=1&amp;is_best_seller=true&amp;instant_download=true</span></span></div>
+          <div class="bar"><span class="dot"></span><span class="url">etsy.com/search?q=stickers<span class="added">&amp;explicit=1&amp;is_best_seller=true&amp;instant_download=true&amp;order=date_desc</span></span></div>
         </div>
       </div>
     </div>`,
@@ -98,7 +98,7 @@ const urlStory = (copy) =>
     .rows { width: 100%; display: flex; flex-direction: column; gap: 40px; margin-top: 46px; }
     .label { font-size: 17px; text-transform: uppercase; letter-spacing: 0.13em; color: rgba(255,255,255,0.6); margin-bottom: 14px; }
     .bar { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 22px 32px; }
-    .bar span.url { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 20px; white-space: nowrap; }
+    .bar span.url { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 17px; white-space: nowrap; }
     .dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.34); flex: none; }
     .added { color: #c7d2fe; }
     h1 { font-size: 48px; }
@@ -153,31 +153,19 @@ async function shoot(browser, html, width, height, file) {
   written.push(file);
 }
 
-async function popupShot(browser, popupUrl, locale, messages, scheme, file) {
+async function popupShot(browser, popupUrl, scheme, file) {
   const view = await browser.newPage();
   await view.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }]);
   await view.setViewport({ width: 320, height: 420, deviceScaleFactor: 2 });
   await view.goto(popupUrl, { waitUntil: 'domcontentloaded' });
   await sleep(400);
 
-  const height = await view.evaluate(
-    (msgs, filterLabels) => {
-      const text = (key) => msgs[key].message;
-      for (const element of document.querySelectorAll('[data-i18n]')) {
-        element.textContent = text(element.dataset.i18n);
-      }
-      document.getElementById('masterState').textContent = text('masterOn');
-      document.querySelectorAll('#filters .row-title').forEach((node, index) => {
-        node.textContent = filterLabels[index];
-      });
-      document.getElementById('status').dataset.tone = 'ok';
-      document.getElementById('statusText').textContent = text('statusActive');
-      document.getElementById('shortcut').textContent = text('shortcutHint').replace('$SHORTCUT$', '⌥⇧F');
-      return document.body.scrollHeight;
-    },
-    messages,
-    [messages.filterExplicit.message, messages.filterBestSeller.message, messages.filterInstantDownload.message]
-  );
+  const height = await view.evaluate(() => {
+    document.getElementById('status').dataset.tone = 'ok';
+    document.getElementById('statusText').textContent = chrome.i18n.getMessage('statusActive');
+    document.getElementById('shortcut').textContent = chrome.i18n.getMessage('shortcutHint', ['⌥⇧F']);
+    return document.body.scrollHeight;
+  });
 
   const buffer = await view.screenshot({ clip: { x: 0, y: 0, width: 320, height } });
   await view.close();
@@ -201,11 +189,10 @@ async function popupShot(browser, popupUrl, locale, messages, scheme, file) {
 
   for (const locale of LOCALES) {
     const copy = COPY[locale];
-    const messages = JSON.parse(fs.readFileSync(path.join(SRC, '_locales', locale, 'messages.json'), 'utf8'));
     const dir = LOCALES.length === 1 ? OUT : path.join(OUT, locale);
 
-    const light = await popupShot(browser, popupUrl, locale, messages, 'light', path.join(dir, 'popup-light.png'));
-    const dark = await popupShot(browser, popupUrl, locale, messages, 'dark', path.join(dir, 'popup-dark.png'));
+    const light = await popupShot(browser, popupUrl, 'light', path.join(dir, 'popup-light.png'));
+    const dark = await popupShot(browser, popupUrl, 'dark', path.join(dir, 'popup-dark.png'));
 
     await shoot(browser, overview(copy, light), 1280, 800, path.join(dir, 'screenshot-1-overview.png'));
     await shoot(browser, urlStory(copy), 1280, 800, path.join(dir, 'screenshot-2-url.png'));

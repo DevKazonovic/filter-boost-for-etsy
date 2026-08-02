@@ -26,8 +26,8 @@ const settle = async () => {
   for (let i = 0; i < 6; i++) await new Promise((r) => setTimeout(r, 0));
 };
 
-const ALL_ON = { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true } };
-const ALL = 'explicit=1&is_best_seller=true&instant_download=true';
+const ALL_ON = { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } };
+const ALL = 'explicit=1&is_best_seller=true&instant_download=true&order=date_desc';
 
 let workerSeq = 0;
 
@@ -59,7 +59,11 @@ async function bootWorker(seed = {}) {
     webNavigation: { onBeforeNavigate: on('nav.before'), onHistoryStateUpdated: on('nav.history') },
     tabs: { onRemoved: on('tabs.removed'), update: async (tabId, props) => updates.push({ tabId, url: props.url }) },
     commands: { onCommand: on('command') },
-    runtime: { onInstalled: on('installed'), onStartup: on('startup') },
+    runtime: {
+      onInstalled: on('installed'),
+      onStartup: on('startup'),
+      getManifest: () => ({ version: seed.version || '1.1.0' }),
+    },
     action: { setBadgeText: ({ text }) => (badge.text = text), setBadgeBackgroundColor: () => {} },
   };
 
@@ -99,14 +103,14 @@ check(
   'urlWithFilters only adds the enabled filters',
   etsy.urlWithFilters(new URL('https://www.etsy.com/search?q=mugs'), {
     enabled: true,
-    filters: { explicit: false, bestSeller: true, instantDownload: false },
+    filters: { explicit: false, bestSeller: true, instantDownload: false, newest: false },
   }).href,
   'https://www.etsy.com/search?q=mugs&is_best_seller=true'
 );
 check(
   'urlWithFilters never overwrites a user value',
   etsy.urlWithFilters(new URL('https://www.etsy.com/search?q=mugs&explicit=0'), ALL_ON).href,
-  'https://www.etsy.com/search?q=mugs&explicit=0&is_best_seller=true&instant_download=true'
+  'https://www.etsy.com/search?q=mugs&explicit=0&is_best_seller=true&instant_download=true&order=date_desc'
 );
 check('urlWithFilters returns null when nothing is missing', etsy.urlWithFilters(new URL(`https://www.etsy.com/search?q=a&${ALL}`), ALL_ON), null);
 check('urlWithFilters returns null when disabled', etsy.urlWithFilters(new URL('https://www.etsy.com/search?q=a'), { ...ALL_ON, enabled: false }), null);
@@ -116,7 +120,7 @@ check('tabStatus: undefined url', etsy.tabStatus(undefined, ALL_ON).status, 'not
 check('tabStatus: master off', etsy.tabStatus('https://www.etsy.com/search?q=a', { ...ALL_ON, enabled: false }).status, 'disabled');
 check(
   'tabStatus: every filter off',
-  etsy.tabStatus('https://www.etsy.com/search?q=a', { enabled: true, filters: { explicit: false, bestSeller: false, instantDownload: false } }).status,
+  etsy.tabStatus('https://www.etsy.com/search?q=a', { enabled: true, filters: { explicit: false, bestSeller: false, instantDownload: false, newest: false } }).status,
   'noFilters'
 );
 check('tabStatus: filters present', etsy.tabStatus(`https://www.etsy.com/search?q=a&${ALL}`, ALL_ON).status, 'active');
@@ -125,7 +129,7 @@ check(
   'tabStatus: only the enabled filters have to be present',
   etsy.tabStatus('https://www.etsy.com/search?q=a&is_best_seller=true', {
     enabled: true,
-    filters: { explicit: false, bestSeller: true, instantDownload: false },
+    filters: { explicit: false, bestSeller: true, instantDownload: false, newest: false },
   }).status,
   'active'
 );
@@ -133,11 +137,11 @@ check(
 check('normalizeSettings fills defaults', settingsLib.normalizeSettings(undefined), ALL_ON);
 check('normalizeSettings keeps explicit false', settingsLib.normalizeSettings({ enabled: true, filters: { explicit: false } }), {
   enabled: true,
-  filters: { explicit: false, bestSeller: true, instantDownload: true },
+  filters: { explicit: false, bestSeller: true, instantDownload: true, newest: true },
 });
 check('normalizeSettings drops unknown keys', settingsLib.normalizeSettings({ enabled: false, filters: { nope: true } }), {
   enabled: false,
-  filters: { explicit: true, bestSeller: true, instantDownload: true },
+  filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true },
 });
 
 console.log('\n--- locales and manifest ---');
@@ -222,21 +226,21 @@ console.log('\n--- service worker ---');
 }
 
 {
-  const env = await bootWorker({ sync: { settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true } } } });
+  const env = await bootWorker({ sync: { settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } } });
   await env.fire('nav.before', nav(6, 'https://www.etsy.com/search?q=mugs'));
   check('master off does nothing', env.updates.length, 0);
   check('badge reads OFF', env.badge.text, 'OFF');
 }
 
 {
-  const env = await bootWorker({ sync: { settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: false } } } });
+  const env = await bootWorker({ sync: { settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: false, newest: false } } } });
   await env.fire('nav.before', nav(7, 'https://www.etsy.com/search?q=mugs'));
   check('only the enabled filters are injected', lastUrl(env.updates), 'https://www.etsy.com/search?q=mugs&is_best_seller=true');
   check('badge is clear while enabled', env.badge.text, '');
 }
 
 {
-  const env = await bootWorker({ sync: { settings: { enabled: true, filters: { explicit: false, bestSeller: false, instantDownload: false } } } });
+  const env = await bootWorker({ sync: { settings: { enabled: true, filters: { explicit: false, bestSeller: false, instantDownload: false, newest: false } } } });
   await env.fire('nav.before', nav(8, 'https://www.etsy.com/search?q=mugs'));
   check('every filter off means no redirect', env.updates.length, 0);
 }
@@ -245,13 +249,13 @@ console.log('\n--- service worker ---');
   const env = await bootWorker();
   await env.fire('nav.before', nav(9, 'https://www.etsy.com/search?q=mugs'));
   await env.fire('nav.before', nav(9, lastUrl(env.updates)));
-  await env.chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: true } } });
+  await env.chrome.storage.sync.set({ settings: { enabled: true, filters: { explicit: false, bestSeller: true, instantDownload: true, newest: true } } });
   await settle();
   await env.fire('nav.before', nav(9, 'https://www.etsy.com/search?q=mugs'));
   check(
     'changing settings re-applies on the next navigation, without the filter just turned off',
     lastUrl(env.updates),
-    'https://www.etsy.com/search?q=mugs&is_best_seller=true&instant_download=true'
+    'https://www.etsy.com/search?q=mugs&is_best_seller=true&instant_download=true&order=date_desc'
   );
   const after = env.updates.length;
   await env.fire('nav.before', nav(9, 'https://www.etsy.com/search?q=mugs&is_best_seller=true'));
@@ -259,7 +263,7 @@ console.log('\n--- service worker ---');
 }
 
 {
-  const env = await bootWorker({ sync: { settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true } } } });
+  const env = await bootWorker({ sync: { settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } } });
   await env.fire('command', 'toggle-filters');
   check('the keyboard command turns the master switch on', env.areas.sync.settings.enabled, true);
   check('the badge follows the command', env.badge.text, '');
@@ -299,6 +303,38 @@ console.log('\n--- service worker ---');
   const env = await bootWorker();
   await env.fire('installed', { reason: 'install' });
   check('install seeds the default settings', env.areas.sync.settings, ALL_ON);
+  check('a fresh install shows no update notice', env.areas.local.pendingNote, undefined);
+  check('and no badge', env.badge.text, '');
+}
+
+{
+  const env = await bootWorker();
+  await env.fire('installed', { reason: 'update', previousVersion: '1.0.0' });
+  check('an update to a version with a note flags it', env.areas.local.pendingNote, '1.1.0');
+  check('and marks the toolbar icon', env.badge.text, '•');
+
+  await env.chrome.storage.local.set({ pendingNote: '' });
+  check('dismissing the notice clears the badge', env.badge.text, '');
+}
+
+{
+  const env = await bootWorker({ version: '1.0.0' });
+  await env.fire('installed', { reason: 'update', previousVersion: '0.9.0' });
+  check('an update to a version with no note stays silent', env.areas.local.pendingNote, undefined);
+  check('and leaves the badge alone', env.badge.text, '');
+}
+
+{
+  const env = await bootWorker();
+  await env.fire('installed', { reason: 'update', previousVersion: '1.1.0' });
+  check('reloading the same version does not re-announce it', env.areas.local.pendingNote, undefined);
+  check('and shows no badge', env.badge.text, '');
+}
+
+{
+  const env = await bootWorker({ sync: { settings: { enabled: false, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } } } });
+  await env.fire('installed', { reason: 'update', previousVersion: '1.0.0' });
+  check('the off state still wins over the update dot', env.badge.text, 'OFF');
 }
 
 console.log(failures ? `\n${failures} of ${checks} failing` : `\nall green (${checks} checks)`);

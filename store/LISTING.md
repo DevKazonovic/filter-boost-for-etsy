@@ -30,15 +30,16 @@ Every time you start a new Etsy search, Filter Boost adds the filters you chose:
 - Bestseller (is_best_seller=true)
 - Instant download (instant_download=true)
 - Explicit results (explicit=1)
+- Newest first (order=date_desc)
 
-Etsy loads the results with its own filter chips already ticked, exactly as if you had clicked them yourself.
+Etsy loads the results with its own filter chips already ticked and sorted, exactly as if you had clicked them yourself.
 
 IT STAYS OUT OF YOUR WAY
 Filters are added when a new search term appears, not on every click. Untick one on the results page and it stays unticked until your next search. Anything you put in the URL yourself is never overwritten.
 
 CONTROL
 - A master switch in the toolbar popup turns everything off in one click.
-- Each of the three filters has its own switch, so you can force one, two or all three.
+- Each filter has its own switch, so you can force one, some or all of them.
 - A keyboard shortcut (Alt+Shift+F by default) toggles it without opening the popup.
 - The popup tells you whether the search you are looking at has your filters applied, and can apply them to the current page with one click.
 
@@ -109,15 +110,15 @@ use that URL, or host `PRIVACY.html` on GitHub Pages.
 ## Reviewer notes
 
 ```text
-The extension has no content script and never reads page content. It listens to webNavigation events limited to etsy.com, and when a navigation to an Etsy search URL starts with a new search term it redirects the tab to the same URL plus the user's chosen filter parameters (explicit, is_best_seller, instant_download). These are Etsy's own public search filter parameters. The popup lets the user turn the whole thing off or toggle each filter individually.
+The extension has no content script and never reads page content. It listens to webNavigation events limited to etsy.com, and when a navigation to an Etsy search URL starts with a new search term it redirects the tab to the same URL plus the user's chosen filter parameters (explicit, is_best_seller, instant_download, order). These are Etsy's own public search filter parameters. The popup lets the user turn the whole thing off or toggle each filter individually.
 
-To test: install, open https://www.etsy.com/search?q=stickers, and the address bar will show the three parameters appended. Click the toolbar icon and turn "Force filters" off, then repeat the search to see the URL left untouched.
+To test: install, open https://www.etsy.com/search?q=stickers, and the address bar will show the four parameters appended. Click the toolbar icon and turn "Force filters" off, then repeat the search to see the URL left untouched.
 ```
 
 ## Before you submit
 
 1. Register the developer account and pay the one-time fee if you have not already.
-2. Host `PRIVACY.html` and copy the URL into the privacy policy field.
+2. Optionally host `PRIVACY.md` or `PRIVACY.html` and copy the URL into the privacy policy field.
 3. Set a support email or support URL on the listing.
-4. Upload `../dist/filter-boost-for-etsy-1.0.0.zip`.
+4. Upload the zip from `../dist/`.
 5. Choose Public or Unlisted, and the regions you want.

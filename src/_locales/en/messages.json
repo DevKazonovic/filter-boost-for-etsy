@@ -35,6 +35,9 @@
   "filterInstantDownload": {
     "message": "Instant download"
   },
+  "filterNewest": {
+    "message": "Newest first"
+  },
   "statusActive": {
     "message": "Filters are active on this search"
   },
@@ -70,5 +73,21 @@
   },
   "disclaimer": {
     "message": "Not affiliated with Etsy, Inc. Etsy is a trademark of Etsy, Inc."
+  },
+  "updateNoticeTitle": {
+    "message": "New in $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "1.1.0"
+      }
+    }
+  },
+  "dismissNotice": {
+    "message": "Got it"
+  },
+  "releaseNote110": {
+    "message": "Searches now open sorted newest first. Switch it off below if you would rather keep Etsy's own order.",
+    "description": "Shown once after updating to 1.1.0."
   }
 }

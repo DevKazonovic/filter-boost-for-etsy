@@ -1,0 +1,126 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Deploy even if the manifest version did not change
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Has the version changed
+        id: version
+        run: |
+          VERSION=$(node -p "require('./src/manifest.json').version")
+          git show HEAD~1:src/manifest.json > /tmp/prev.json 2>/dev/null || echo '{}' > /tmp/prev.json
+          PREV=$(node -p "require('/tmp/prev.json').version || 'none'")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "zip=dist/filter-boost-for-etsy-$VERSION.zip" >> "$GITHUB_OUTPUT"
+          if [ "$VERSION" != "$PREV" ] || [ "${{ inputs.force }}" = "true" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploying $VERSION (previous $PREV)"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Version is still $VERSION, running tests only. Bump src/manifest.json to release."
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache Chrome for Testing
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chrome for Testing
+        run: npx puppeteer browsers install chrome
+
+      - name: Unit tests
+        run: npm test
+
+      - name: End to end tests
+        run: xvfb-run --auto-servernum npm run e2e
+
+      - name: Validate and package
+        run: npm run build
+
+      - name: Tag the release
+        if: steps.version.outputs.deploy == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          files: ${{ steps.version.outputs.zip }}
+          generate_release_notes: true
+
+      - name: Store credentials missing
+        if: steps.version.outputs.deploy == 'true' && env.CWS_CLIENT_ID == ''
+        run: echo "::warning::CWS_* secrets are not set, skipping the store upload."
+
+      - name: Get a store access token
+        if: steps.version.outputs.deploy == 'true' && env.CWS_CLIENT_ID != ''
+        id: token
+        run: |
+          TOKEN=$(curl -sf -X POST https://oauth2.googleapis.com/token \
+            -d "client_id=$CWS_CLIENT_ID" \
+            -d "client_secret=$CWS_CLIENT_SECRET" \
+            -d "refresh_token=$CWS_REFRESH_TOKEN" \
+            -d "grant_type=refresh_token" | jq -er .access_token)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to the Chrome Web Store
+        if: steps.version.outputs.deploy == 'true' && env.CWS_CLIENT_ID != ''
+        run: |
+          RESPONSE=$(curl -sf -X PUT \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "x-goog-api-version: 2" \
+            -T "${{ steps.version.outputs.zip }}" \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$CWS_EXTENSION_ID")
+          echo "$RESPONSE"
+          STATE=$(echo "$RESPONSE" | jq -r '.uploadState')
+          if [ "$STATE" != "SUCCESS" ]; then
+            echo "::error::Upload failed: $(echo "$RESPONSE" | jq -r '.itemError[]?.error_detail // .uploadState')"
+            exit 1
+          fi
+
+      - name: Submit for review
+        if: steps.version.outputs.deploy == 'true' && env.CWS_CLIENT_ID != ''
+        run: |
+          RESPONSE=$(curl -sf -X POST \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "x-goog-api-version: 2" \
+            -H "Content-Length: 0" \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/$CWS_EXTENSION_ID/publish")
+          echo "$RESPONSE"
+          echo "$RESPONSE" | jq -e '.status | index("OK") != null' > /dev/null
+          echo "::notice::${{ steps.version.outputs.version }} submitted for review"

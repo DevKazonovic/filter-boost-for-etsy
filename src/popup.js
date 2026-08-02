@@ -1,5 +1,6 @@
 import { FILTERS, tabStatus, TAB_STATUS } from './lib/etsy.js';
 import { readSettings, writeSettings, SETTINGS_KEY } from './lib/settings.js';
+import { NOTICE_KEY, noteForVersion } from './lib/notes.js';
 
 const t = (key, subs) => chrome.i18n.getMessage(key, subs);
 
@@ -27,6 +28,10 @@ const statusText = document.getElementById('statusText');
 const applyButton = document.getElementById('apply');
 const shortcutLabel = document.getElementById('shortcut');
 const rowTemplate = document.getElementById('filterRow');
+const notice = document.getElementById('notice');
+const noticeTitle = document.getElementById('noticeTitle');
+const noticeText = document.getElementById('noticeText');
+const dismissButton = document.getElementById('dismiss');
 
 let settings = null;
 let activeTab = null;
@@ -78,6 +83,24 @@ function render() {
   renderStatus();
 }
 
+async function renderNotice() {
+  const stored = await chrome.storage.local.get(NOTICE_KEY).catch(() => ({}));
+  const version = stored[NOTICE_KEY];
+  const messageKey = noteForVersion(version);
+  if (!messageKey) {
+    notice.hidden = true;
+    return;
+  }
+  noticeTitle.textContent = t('updateNoticeTitle', [version]);
+  noticeText.textContent = t(messageKey);
+  notice.hidden = false;
+}
+
+dismissButton.addEventListener('click', async () => {
+  notice.hidden = true;
+  await chrome.storage.local.remove(NOTICE_KEY);
+});
+
 async function loadShortcut() {
   try {
     const commands = await chrome.commands.getAll();
@@ -116,5 +139,6 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   settings = loaded;
   activeTab = tabs[0] || null;
   render();
+  renderNotice();
   loadShortcut();
 })();
