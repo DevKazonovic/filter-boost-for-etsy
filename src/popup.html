@@ -33,11 +33,27 @@
       <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
     </label>
 
+    <p class="group-label" data-i18n="groupUrl"></p>
     <ul class="filters" id="filters"></ul>
+
+    <p class="group-label" data-i18n="groupPage"></p>
+    <ul class="filters">
+      <li>
+        <label class="row filter" for="hideAds">
+          <span class="row-label">
+            <span class="row-title" data-i18n="hideAdsLabel"></span>
+            <span class="row-meta" data-i18n="hideAdsMeta"></span>
+          </span>
+          <input type="checkbox" id="hideAds" class="switch-input" role="switch" />
+          <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+      </li>
+    </ul>
 
     <p class="note" data-i18n="popupNote"></p>
 
     <footer>
+      <span id="version"></span>
       <span id="shortcut"></span>
       <span class="disclaimer" data-i18n="disclaimer"></span>
     </footer>

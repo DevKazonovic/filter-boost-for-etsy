@@ -1,7 +1,8 @@
 # Filter Boost for Etsy
 
-Chrome extension (Manifest V3) that adds a chosen set of filter parameters to Etsy search URLs, so
-every new search starts from the same filters.
+Chrome extension (Manifest V3) that shapes Etsy search results: it adds a chosen set of filter
+parameters to Etsy search URLs so every new search starts from the same filters, and it can hide the
+listing cards Etsy labels as promoted.
 
 Forced parameters, each individually switchable:
 
@@ -12,11 +13,56 @@ Forced parameters, each individually switchable:
 | Instant download | `instant_download=true` |
 | Newest first | `order=date_desc` |
 
+Plus one results-page switch, off by default:
+
+| Switch | What it does |
+| --- | --- |
+| Hide promoted listings | Visually hides ad cards on the results page, with a counter and one-click reveal |
+
+## Hiding promoted listings
+
+A content script injected only on Etsy search paths classifies each result card from four independent
+families of Etsy's own markers: click attribution on the listing link, the promoted flag on the
+quick-add and favourite controls, the ad prefix on the card title identifier, and the advertising
+disclosure Etsy renders for the reader. A card is hidden only when at least one promoted marker fires
+and no organic marker does, so an ambiguous card stays visible.
+
+Etsy's own visible "Ad" label outranks everything. If the card tells the reader it is an ad, it is
+hidden, and no other marker can veto that. Etsy is legally obliged to render that label, and it is the
+only signal that means the same thing to the code as it does to the person looking at the page.
+
+Below the label, only two markers may vote organic: the attribution parameter on the link, and the
+promoted flag on the quick-add form. Everything else is promoted-only.
+
+The attribution parameter is not trustworthy on its own. Etsy serves plenty of promoted cards with the
+organic value on it, which made every one of those ads permanently immune while it was allowed to veto.
+
+That distinction is load-bearing. The title prefix and the disclosure wording are absence-shaped, and
+an absent ad prefix is not evidence of an organic listing. The listing-source fields are worse: they
+record where an interaction came from, not whether the listing is an ad, so a promoted card inside a
+search module legitimately reads `search` there. Both mistakes let Etsy's top-of-grid ad block through
+untouched while the interleaved ads were hidden correctly.
+
+A card is found by climbing from a listing link to the highest ancestor still covering exactly one
+listing, rather than assuming it sits in a grid list item. Etsy's top-of-grid ads are not list items,
+and assuming they were meant hiding a card's image while leaving its title and price on screen.
+
+The failure direction is deliberate. Leaving an ad visible is self-correcting because the card still
+says it is an ad, while hiding an organic result is invisible and silently corrupts research. So:
+markers that rotate per deploy are never used, cards are hidden rather than removed, a counter is
+shown even when nothing was hidden, and if every card on a page classifies as promoted the detector is
+treated as broken and nothing is hidden at all.
+
+Detection lives in `src/ad-markers.js`, page mechanics in `src/content.js`. Both are plain scripts,
+not modules, because manifest content scripts cannot be modules and there is no bundler here.
+
 ## Layout
 
 ```text
 src/            the extension itself, this folder is what gets loaded and zipped
   lib/          URL and settings logic shared by the service worker and the popup
+  ad-markers.js classifies a result card as promoted, organic or unknown
+  content.js    runs on Etsy search pages, hides promoted cards, owns the on-page counter
   _locales/     en (i18n is wired up, dropping in another locale needs no code change)
 tests/          unit.mjs (stubbed Chrome APIs) and e2e.mjs (real Chrome via puppeteer)
 scripts/        icon generation, store asset generation, validate and package
@@ -52,8 +98,8 @@ Run from the repository root, after `npm install` (puppeteer is the only depende
 test and asset tooling needs it, the extension itself has none).
 
 ```sh
-npm test              # 79 logic checks against stubbed Chrome APIs
-npm run e2e           # 37 checks in a real Chrome with the extension loaded
+npm test              # 85 logic checks against stubbed Chrome APIs
+npm run e2e           # 77 checks in a real Chrome with the extension loaded
 npm run verify        # both suites, then validate and package
 npm run icons         # regenerate src/icons and the opaque 128px store icon
 npm run assets        # regenerate the localized store screenshots and promo tiles
@@ -61,11 +107,13 @@ npm run build         # validate the package and write dist/*.zip
 ```
 
 `e2e` never touches etsy.com: it maps the Etsy hostnames to a local stub server with Chrome's host
-resolver rules.
+resolver rules. The stub serves a realistic search grid built from captured Etsy card markup, so the
+ad detection is exercised against organic, promoted, conflicting and all-promoted pages.
 
 `build` fails the package rather than shipping it if the manifest version is malformed, a locale is
 missing a key, an icon has the wrong dimensions, a message key referenced by the manifest does not
-exist, a broad permission crept in, or a dotfile would end up in the zip.
+exist, a broad permission crept in, a content script asset is missing or reaches beyond Etsy search,
+or a dotfile would end up in the zip.
 
 ## Automation
 
@@ -138,8 +186,12 @@ bump the manifest version, `npm run verify`.
 ## Permissions
 
 `storage` for the settings and the per-tab memory, `webNavigation` plus host access to `*.etsy.com`
-to see search navigations. No content script, no page access, no data collection. See
-`store/PRIVACY.html`.
+to see search navigations. The content script is scoped to Etsy search paths only, never site-wide.
+It reads result cards to classify them, makes no network requests, and retains nothing. No data
+collection. See `store/PRIVACY.html`.
+
+Match patterns are tested against the path **and** the query string, so `/search` alone never matches
+`/search?q=x`. Both forms are listed. `build` fails if a pattern reaches beyond Etsy search.
 
 ## Publishing
 

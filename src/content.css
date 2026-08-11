@@ -1,0 +1,75 @@
+[data-filter-boost-hidden="1"] {
+  display: none !important;
+}
+
+#filter-boost-strip {
+  position: fixed !important;
+  inset-block-end: 16px;
+  inset-inline-start: 16px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-block: 7px;
+  padding-inline: 11px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #16161a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: auto;
+}
+
+#filter-boost-strip .filter-boost-strip__label {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+}
+
+#filter-boost-strip .filter-boost-strip__version {
+  margin: 0;
+  padding: 0;
+  color: #6b6f76;
+  font: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+#filter-boost-strip .filter-boost-strip__button {
+  margin: 0;
+  padding-block: 3px;
+  padding-inline: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-transform: none;
+  cursor: pointer;
+}
+
+#filter-boost-strip .filter-boost-strip__button[hidden] {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  #filter-boost-strip {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: #202024;
+    color: #f2f2f4;
+  }
+
+  #filter-boost-strip .filter-boost-strip__version {
+    color: #9b9ba3;
+  }
+
+  #filter-boost-strip .filter-boost-strip__button {
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+}

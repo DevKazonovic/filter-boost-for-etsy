@@ -81,16 +81,17 @@ they are not uploaded anywhere.
 ### Single purpose description
 
 ```text
-Filter Boost adds a fixed set of Etsy search filter parameters to Etsy search result URLs so the user does not have to select the same filters manually on every search. That is its only function.
+Filter Boost shapes what the user sees in Etsy search results. It applies the user's chosen Etsy search filter parameters to search URLs, and on the results page it hides the listing cards Etsy has itself labelled as promoted. Both are the same single purpose: controlling which Etsy search results the user is shown.
 ```
 
 ### Permission justifications
 
 | Permission | Justification |
 | --- | --- |
-| `storage` | Stores the user's own switch settings (master on/off and one flag per filter) and a per-tab note of the current search term so the extension does not re-apply filters the user has just removed. No browsing data is stored. |
+| `storage` | Stores the user's own switch settings (master on/off, one flag per filter, and whether promoted listings are hidden) and a per-tab note of the current search term so the extension does not re-apply filters the user has just removed. No browsing data is stored. |
 | `webNavigation` | The extension needs to know when a navigation to an Etsy search URL starts so it can add the missing filter parameters before the page loads. Events are restricted to the etsy.com host permission. No other navigation is observed. |
 | `*://*.etsy.com/*` (host access) | The extension only acts on Etsy search result pages. This is the narrowest host pattern that covers etsy.com and its localised subdomains. No other site is accessed. |
+| Content script | Injected only on Etsy search result paths, never site-wide. It reads the rendered result cards to find the ones Etsy labels as promoted and hides them when the user has switched that on. It makes no network requests, stores nothing it reads, and never interacts with the page on the user's behalf. |
 
 **Remote code:** select "No, I am not using remote code". If a justification box appears, use:
 
@@ -100,19 +101,25 @@ All logic ships inside the package. The extension loads no external scripts, use
 
 **Data usage:** Select "does not collect or use user data" and tick the three certification boxes. The
 extension collects nothing: no personally identifiable information, no health, financial, authentication,
-personal communication, location, browsing history, or web-page content. Settings never leave the user's
-own Chrome sync storage.
+personal communication, location, browsing history, or web-page content. The content script reads Etsy
+search result pages transiently to classify listing cards, but nothing read is retained past the page load
+and nothing is transmitted. Settings never leave the user's own Chrome sync storage.
 
-**Privacy policy URL:** optional for this extension, because it certifies that it collects no user
-data. If you want one anyway, no website is needed: paste `PRIVACY.md` into a public GitHub gist and
-use that URL, or host `PRIVACY.html` on GitHub Pages.
+**Privacy policy URL:** publish one. Host `PRIVACY.html` on GitHub Pages, or paste `PRIVACY.md` into a
+public gist, and put that URL in the listing. The extension now reads page content, so a reachable policy
+saying what is read and that nothing is kept is worth having even though the no-collection certification
+still applies.
 
 ## Reviewer notes
 
 ```text
-The extension has no content script and never reads page content. It listens to webNavigation events limited to etsy.com, and when a navigation to an Etsy search URL starts with a new search term it redirects the tab to the same URL plus the user's chosen filter parameters (explicit, is_best_seller, instant_download, order). These are Etsy's own public search filter parameters. The popup lets the user turn the whole thing off or toggle each filter individually.
+The extension does two things, both on Etsy search only.
 
-To test: install, open https://www.etsy.com/search?q=stickers, and the address bar will show the four parameters appended. Click the toolbar icon and turn "Force filters" off, then repeat the search to see the URL left untouched.
+1. It listens to webNavigation events limited to etsy.com, and when a navigation to an Etsy search URL starts with a new search term it redirects the tab to the same URL plus the user's chosen filter parameters (explicit, is_best_seller, instant_download, order). These are Etsy's own public search filter parameters.
+
+2. A content script, injected only on Etsy search result paths and not site-wide, reads the rendered listing cards and hides the ones Etsy has marked as promoted. It identifies them from Etsy's own markers, including the advertising disclosure Etsy itself renders on the card. Hidden cards stay in the page and are only visually hidden, a counter on the page always states how many were hidden, and one click restores them. The feature ships switched off. The script makes no network requests, stores nothing it reads, and never clicks, favourites, carts or otherwise interacts with Etsy on the user's behalf. A card hidden before it enters the viewport may not register an advertising impression, as with any content blocker.
+
+To test: install, open https://www.etsy.com/search?q=stickers, and the address bar will show the four parameters appended. Click the toolbar icon, turn on "Hide promoted listings" under "On the results page", and the promoted cards disappear with a counter at the bottom left of the page offering to show them again. Turn the master switch off and everything reverts with no page reload.
 ```
 
 ## Before you submit

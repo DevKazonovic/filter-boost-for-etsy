@@ -30,6 +30,11 @@ export function activeFilters(settings) {
   return FILTERS.filter((filter) => settings.filters?.[filter.id] !== false);
 }
 
+export function filterSignature(settings) {
+  if (!settings || settings.enabled === false) return 'off';
+  return FILTERS.map((filter) => (settings.filters?.[filter.id] !== false ? '1' : '0')).join('');
+}
+
 export function missingFilters(url, settings) {
   return activeFilters(settings).filter((filter) => !url.searchParams.has(filter.param));
 }

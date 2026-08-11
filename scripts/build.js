@@ -69,9 +69,23 @@ for (const [size, file] of Object.entries(manifest.icons)) {
   }
 }
 
-const referenced = [manifest.background.service_worker, manifest.action.default_popup];
+const contentScripts = manifest.content_scripts || [];
+const referenced = [
+  manifest.background.service_worker,
+  manifest.action.default_popup,
+  ...contentScripts.flatMap((block) => [...(block.js || []), ...(block.css || [])]),
+];
 for (const file of referenced) {
   if (!fs.existsSync(path.join(SRC, file))) fail(`${file} referenced by the manifest is missing`);
+}
+
+for (const block of contentScripts) {
+  if (!block.matches?.length) fail('a content script block declares no matches');
+  for (const pattern of block.matches || []) {
+    if (!/^\*:\/\/\*\.etsy\.com\//.test(pattern)) fail(`content script match "${pattern}" reaches beyond Etsy`);
+    if (/^\*:\/\/\*\.etsy\.com\/\*$/.test(pattern)) fail('content script matches every Etsy page, narrow it to search');
+  }
+  if (block.all_frames) fail('content scripts must stay out of sub-frames');
 }
 
 const junk = files.filter((file) => path.basename(file).startsWith('.') || file.endsWith('.map'));

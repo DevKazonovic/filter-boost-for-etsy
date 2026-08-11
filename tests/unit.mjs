@@ -26,7 +26,7 @@ const settle = async () => {
   for (let i = 0; i < 6; i++) await new Promise((r) => setTimeout(r, 0));
 };
 
-const ALL_ON = { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true } };
+const ALL_ON = { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true }, hideAds: false };
 const ALL = 'explicit=1&is_best_seller=true&instant_download=true&order=date_desc';
 
 let workerSeq = 0;
@@ -138,11 +138,21 @@ check('normalizeSettings fills defaults', settingsLib.normalizeSettings(undefine
 check('normalizeSettings keeps explicit false', settingsLib.normalizeSettings({ enabled: true, filters: { explicit: false } }), {
   enabled: true,
   filters: { explicit: false, bestSeller: true, instantDownload: true, newest: true },
+  hideAds: false,
 });
 check('normalizeSettings drops unknown keys', settingsLib.normalizeSettings({ enabled: false, filters: { nope: true } }), {
   enabled: false,
   filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true },
+  hideAds: false,
 });
+check('hideAds defaults off, unlike the URL filters', settingsLib.normalizeSettings({}).hideAds, false);
+check('hideAds survives a round trip', settingsLib.normalizeSettings({ hideAds: true }).hideAds, true);
+check('hideAds only accepts a real true', settingsLib.normalizeSettings({ hideAds: 'yes' }).hideAds, false);
+
+check('filterSignature ignores hideAds', etsy.filterSignature({ ...ALL_ON, hideAds: true }), etsy.filterSignature(ALL_ON));
+check('filterSignature tracks the master switch', etsy.filterSignature({ ...ALL_ON, enabled: false }), 'off');
+check('filterSignature tracks each filter', etsy.filterSignature({ ...ALL_ON, filters: { ...ALL_ON.filters, explicit: false } }), '0111');
+check('filterSignature of a fully on set', etsy.filterSignature(ALL_ON), '1111');
 
 console.log('\n--- locales and manifest ---');
 
@@ -176,7 +186,45 @@ check('the popup declares every filter message key', etsy.FILTERS.every((filter)
 check('manifest version is store-shaped', /^\d+\.\d+\.\d+$/.test(manifest.version), true);
 check('the service worker is a module', manifest.background.type, 'module');
 check('no broad host permissions', manifest.host_permissions, ['*://*.etsy.com/*']);
-check('no content scripts are declared', 'content_scripts' in manifest, false);
+
+const contentScripts = manifest.content_scripts || [];
+check('exactly one content script block', contentScripts.length, 1);
+check('the content script only reaches Etsy search paths', contentScripts[0].matches, [
+  '*://*.etsy.com/search',
+  '*://*.etsy.com/search?*',
+  '*://*.etsy.com/search/*',
+  '*://*.etsy.com/*/search',
+  '*://*.etsy.com/*/search?*',
+  '*://*.etsy.com/*/search/*',
+]);
+check('the content script runs before the page paints', contentScripts[0].run_at, 'document_start');
+check('the content script stays out of sub-frames', contentScripts[0].all_frames === true, false);
+check(
+  'every content script asset exists',
+  (
+    await Promise.all(
+      [...contentScripts[0].js, ...contentScripts[0].css].map((file) =>
+        readFile(path.join(SRC, file), 'utf8').then(
+          () => true,
+          () => false
+        )
+      )
+    )
+  ).every(Boolean),
+  true
+);
+check(
+  'the content script carries no import statement, since it is not a module',
+  (await Promise.all(contentScripts[0].js.map((file) => readFile(path.join(SRC, file), 'utf8')))).some((code) =>
+    /^\s*(import|export)\s/m.test(code)
+  ),
+  false
+);
+check(
+  'the content script stylesheet never targets Etsy markup on its own',
+  /\betsy\b|data-listing|is_pl|listing_source|listing-title/i.test(await readFile(path.join(SRC, contentScripts[0].css[0]), 'utf8')),
+  false
+);
 
 console.log('\n--- service worker ---');
 
@@ -260,6 +308,20 @@ console.log('\n--- service worker ---');
   const after = env.updates.length;
   await env.fire('nav.before', nav(9, 'https://www.etsy.com/search?q=mugs&is_best_seller=true'));
   check('and then the same search is left alone again', env.updates.length, after);
+}
+
+{
+  const env = await bootWorker();
+  await env.fire('nav.before', nav(13, 'https://www.etsy.com/search?q=mugs'));
+  await env.fire('nav.before', nav(13, lastUrl(env.updates)));
+  await env.fire('nav.history', nav(13, 'https://www.etsy.com/search?q=mugs&explicit=1'));
+  const before = env.updates.length;
+  await env.chrome.storage.sync.set({
+    settings: { enabled: true, filters: { explicit: true, bestSeller: true, instantDownload: true, newest: true }, hideAds: true },
+  });
+  await settle();
+  await env.fire('nav.before', nav(13, 'https://www.etsy.com/search?q=mugs&page=2&explicit=1'));
+  check('turning on ad hiding does not re-apply URL filters to the search in progress', env.updates.length, before);
 }
 
 {

@@ -1,4 +1,4 @@
-import { parseSearchUrl, searchTermOf, urlWithFilters } from './lib/etsy.js';
+import { parseSearchUrl, searchTermOf, urlWithFilters, filterSignature } from './lib/etsy.js';
 import { readSettings, writeSettings, onSettingsChanged, normalizeSettings, SETTINGS_KEY } from './lib/settings.js';
 import { NOTICE_KEY, noteForVersion } from './lib/notes.js';
 
@@ -73,9 +73,12 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 onSettingsChanged((next) => {
+  const affectsUrls = filterSignature(next) !== filterSignature(settings);
   settings = next;
-  tabTerms = {};
-  persistTabTerms();
+  if (affectsUrls) {
+    tabTerms = {};
+    persistTabTerms();
+  }
   updateBadge();
 });
 

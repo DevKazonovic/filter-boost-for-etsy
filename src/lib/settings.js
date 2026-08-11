@@ -5,6 +5,7 @@ export const SETTINGS_KEY = 'settings';
 export const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
   filters: Object.freeze(Object.fromEntries(FILTERS.map((filter) => [filter.id, true]))),
+  hideAds: false,
 });
 
 export function normalizeSettings(raw) {
@@ -12,7 +13,7 @@ export function normalizeSettings(raw) {
   for (const filter of FILTERS) {
     filters[filter.id] = raw?.filters?.[filter.id] !== false;
   }
-  return { enabled: raw?.enabled !== false, filters };
+  return { enabled: raw?.enabled !== false, filters, hideAds: raw?.hideAds === true };
 }
 
 export async function readSettings() {

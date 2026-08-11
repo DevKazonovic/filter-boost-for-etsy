@@ -23,10 +23,12 @@ const STATUS_MESSAGE = {
 const master = document.getElementById('master');
 const masterState = document.getElementById('masterState');
 const filtersList = document.getElementById('filters');
+const hideAds = document.getElementById('hideAds');
 const statusBox = document.getElementById('status');
 const statusText = document.getElementById('statusText');
 const applyButton = document.getElementById('apply');
 const shortcutLabel = document.getElementById('shortcut');
+const versionLabel = document.getElementById('version');
 const rowTemplate = document.getElementById('filterRow');
 const notice = document.getElementById('notice');
 const noticeTitle = document.getElementById('noticeTitle');
@@ -42,6 +44,7 @@ function applyStaticText() {
     element.textContent = t(element.dataset.i18n);
   }
   document.documentElement.lang = chrome.i18n.getUILanguage();
+  versionLabel.textContent = `v${chrome.runtime.getManifest().version}`;
 }
 
 function buildFilterRows() {
@@ -80,6 +83,9 @@ function render() {
     input.disabled = !settings.enabled;
   }
 
+  hideAds.checked = settings.hideAds === true;
+  hideAds.disabled = !settings.enabled;
+
   renderStatus();
 }
 
@@ -113,6 +119,12 @@ async function loadShortcut() {
 
 master.addEventListener('change', () => {
   settings = { ...settings, enabled: master.checked };
+  writeSettings(settings);
+  render();
+});
+
+hideAds.addEventListener('change', () => {
+  settings = { ...settings, hideAds: hideAds.checked };
   writeSettings(settings);
   render();
 });

@@ -4,11 +4,11 @@
     "description": "Extension name shown in the Chrome Web Store and the toolbar."
   },
   "extDescription": {
-    "message": "Applies your preferred Etsy search filters automatically on every new search, with one click to turn them off.",
+    "message": "Shapes Etsy search results: applies your preferred filters on every search and hides promoted listings on the results page.",
     "description": "Store listing description, 132 characters maximum."
   },
   "commandToggle": {
-    "message": "Turn the filters on or off",
+    "message": "Turn Filter Boost on or off",
     "description": "Keyboard shortcut description."
   },
   "popupTitle": {
@@ -18,13 +18,25 @@
     "message": "Runs on Etsy search results only."
   },
   "masterLabel": {
-    "message": "Force filters"
+    "message": "Filter Boost"
   },
   "masterOn": {
-    "message": "On for every new search"
+    "message": "On for Etsy search"
   },
   "masterOff": {
-    "message": "Off, Etsy searches untouched"
+    "message": "Off, Etsy left untouched"
+  },
+  "groupUrl": {
+    "message": "Added to the search URL"
+  },
+  "groupPage": {
+    "message": "On the results page"
+  },
+  "hideAdsLabel": {
+    "message": "Hide promoted listings"
+  },
+  "hideAdsMeta": {
+    "message": "Cards Etsy labels as ads"
   },
   "filterExplicit": {
     "message": "Explicit results"
@@ -86,8 +98,46 @@
   "dismissNotice": {
     "message": "Got it"
   },
+  "adsHidden": {
+    "message": "$COUNT$ promoted hidden",
+    "description": "Shown on the Etsy results page when promoted cards are hidden.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "adsShown": {
+    "message": "$COUNT$ promoted shown",
+    "description": "Shown on the Etsy results page after the user reveals the hidden cards.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "adsNone": {
+    "message": "No promoted listings found",
+    "description": "Shown on the Etsy results page when nothing was hidden."
+  },
+  "adsUnsure": {
+    "message": "Promoted listings could not be identified here",
+    "description": "Shown on the Etsy results page when the detector looks unreliable and nothing was hidden."
+  },
+  "adsShow": {
+    "message": "Show"
+  },
+  "adsHide": {
+    "message": "Hide"
+  },
   "releaseNote110": {
     "message": "Searches now open sorted newest first. Switch it off below if you would rather keep Etsy's own order.",
     "description": "Shown once after updating to 1.1.0."
+  },
+  "releaseNote120": {
+    "message": "New: hide promoted listings on the results page. It ships off, turn it on under \"On the results page\" below.",
+    "description": "Shown once after updating to 1.2.0."
   }
 }

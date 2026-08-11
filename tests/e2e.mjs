@@ -23,8 +23,137 @@ function check(name, actual, expected) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ALL = 'explicit=1&is_best_seller=true&instant_download=true&order=date_desc';
 
+const SEARCH_PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?search(?:\/|$)/;
+
+function card(id, promoted) {
+  const href = promoted
+    ? `https://www.etsy.com/listing/${id}/thing?ls=a&ref=search_grid-1&bes=1`
+    : `https://www.etsy.com/listing/${id}/thing?ls=s&ref=search_grid-1&content_source=abc`;
+  const shopUrl = promoted ? `https://www.etsy.com/shop/Shop${id}?plkey=k${id}` : `https://www.etsy.com/shop/Shop${id}`;
+  const titleId = `${promoted ? 'ad-' : ''}listing-title-${id}`;
+  const group = promoted ? `data-logger-id="log${id}"` : 'data-appears-component-name="search2_organic_listings_group"';
+  const source = promoted ? 'ads' : 'search';
+  return `<li class="wt-list-unstyled wt-grid__item-xs-6">
+  <div ${group} class="wt-height-full">
+    <div class="v2-listing-card" data-listing-id="${id}" data-shop-id="90${id}">
+      <a class="v2-listing-card__img" data-listing-id="${id}" href="${href}"><img alt="thing ${id}" /></a>
+      <div class="v2-listing-card__info">
+        <h3 id="${titleId}">Thing ${id}</h3>
+        <p><span aria-hidden="true"><button type="button">${promoted ? 'Ad<strong>・</strong>By ' : 'By '}<span data-shop-url="${shopUrl}">Shop${id}</span></button></span><span class="wt-screen-reader-only">${promoted ? 'Ad from shop' : 'From shop'} Shop${id}</span></p>
+      </div>
+      <form action="/cart/listing.php" method="post">
+        <input type="hidden" name="listing_id" value="${id}" />
+        <input type="hidden" name="is_pl" value="${promoted}" />
+        <input type="hidden" name="listing_source" value="${source}" />
+        <button type="submit" aria-describedby="${titleId}">Add to cart</button>
+      </form>
+      <button data-ui="favorite-listing-button" data-listing-id="${id}" data-listing-source="${source}">Fav</button>
+    </div>
+  </div>
+</li>`;
+}
+
+function conflictedCard(id) {
+  return `<li class="wt-list-unstyled wt-grid__item-xs-6">
+  <div class="v2-listing-card" data-listing-id="${id}">
+    <a data-listing-id="${id}" href="https://www.etsy.com/listing/${id}/thing?ls=a&ref=x"><img alt="thing ${id}" /></a>
+    <h3 id="listing-title-${id}">Conflicted ${id}</h3>
+    <input type="hidden" name="is_pl" value="false" />
+  </div>
+</li>`;
+}
+
+function topBlockAd(id) {
+  return `<div class="ad-block-item">
+  <a class="v2-listing-card__img" data-listing-id="${id}" href="https://www.etsy.com/listing/${id}/thing?ls=a&ref=search_grid-1&pro=1&pop=1&dd=1">
+    <img alt="thing ${id}" />
+    <video data-listing-id="${id}" muted preload="none"></video>
+    <span class="ranked-badges-position">Popular now</span>
+  </a>
+  <div class="v2-listing-card__info">
+    <h3 id="listing-title-${id}">Top block ad ${id}</h3>
+    <p><span class="wt-screen-reader-only">Ad from shop Shop${id}</span></p>
+  </div>
+  <button data-ui="favorite-listing-button" data-listing-id="${id}" data-listing-source="search">Fav</button>
+</div>`;
+}
+
+function untaggedAd(id) {
+  return `<div class="carousel-cell">
+  <a href="https://www.etsy.com/listing/${id}/thing?ls=a&ref=search_grid-1&pro=1"><img alt="thing ${id}" /></a>
+  <h3 id="listing-title-${id}">Untagged ad ${id}</h3>
+  <p><span class="wt-screen-reader-only">Ad from shop Shop${id}</span></p>
+</div>`;
+}
+
+function labelOnlyAd(id) {
+  return `<li class="wt-list-unstyled wt-grid__item-xs-6">
+  <div class="v2-listing-card" data-listing-id="${id}">
+    <a data-listing-id="${id}" href="https://www.etsy.com/listing/${id}/thing?ls=s&ref=search_grid-9-1-1&pro=1&pop=1&content_source=abc"><img alt="thing ${id}" /></a>
+    <h3 id="listing-title-${id}">Label only ad ${id}</h3>
+    <p><span aria-hidden="true"><button type="button">Ad<strong>\u30fb</strong>By <span data-shop-url="https://www.etsy.com/shop/Shop${id}">Shop${id}</span></button></span></p>
+    <form action="/cart/listing.php" method="post">
+      <input type="hidden" name="listing_source" value="search" />
+    </form>
+    <button data-ui="favorite-listing-button" data-listing-id="${id}" data-listing-source="search">Fav</button>
+  </div>
+</li>`;
+}
+
+function splitLabelAd(id) {
+  return `<li class="wt-list-unstyled wt-grid__item-xs-6">
+  <div class="v2-listing-card" data-listing-id="${id}">
+    <a data-listing-id="${id}" href="https://www.etsy.com/listing/${id}/thing?ls=s&content_source=abc"><img alt="thing ${id}" /></a>
+    <h3 id="listing-title-${id}">Split label ad ${id}</h3>
+    <div class="byline"><span>4.9</span><span>(1.1k)</span><span>Ad</span><span>\u2022</span><span>By</span><span>Shop${id}</span></div>
+    <input type="hidden" name="is_pl" value="false" />
+  </div>
+</li>`;
+}
+
+function deck(mode, count, from = 0) {
+  return Array.from({ length: count }, (_, i) => card(from + i, mode === 'allads' ? true : (from + i) % 3 === 0)).join('');
+}
+
+function searchPage(mode) {
+  const body =
+    mode === 'allads' ? deck('allads', 12, 1000) : mode === 'conflict' ? deck('mixed', 12, 1000) + conflictedCard(1099) : deck('mixed', 24, 1000);
+  const topBlock =
+    mode === 'topads'
+      ? `<div id="topads">${[5000, 5001, 5002, 5003].map(topBlockAd).join('')}</div>` +
+        `<div id="untagged">${[6000, 6001].map(untaggedAd).join('')}</div>` +
+        `<ol id="labelonly">${[7000, 7001, 7002].map(labelOnlyAd).join('')}</ol>` +
+        `<ol id="splitlabel">${[8000, 8001].map(splitLabelAd).join('')}</ol>`
+      : '';
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><title>Etsy search</title>
+<style>#results > li, #topads > div, #untagged > div, #labelonly > li, #splitlabel > li { display: block !important; }</style></head>
+<body>
+<button id="more" type="button">More</button>
+<button id="renew" type="button">Renew</button>
+${topBlock}
+<ol id="results" class="wt-grid">${body}</ol>
+<template id="moreCards">${deck('mixed', 4, 2000)}</template>
+<template id="renewCards">${deck('mixed', 12, 3000)}</template>
+<script>
+document.getElementById('more').addEventListener('click', () => {
+  document.getElementById('results').append(document.getElementById('moreCards').content.cloneNode(true));
+});
+document.getElementById('renew').addEventListener('click', () => {
+  history.pushState({}, '', location.pathname + location.search + '&page=2');
+  document.getElementById('results').replaceChildren(document.getElementById('renewCards').content.cloneNode(true));
+});
+</script>
+</body></html>`;
+}
+
 const server = http.createServer((req, res) => {
+  const url = new URL(req.url, 'http://localhost');
   res.writeHead(200, { 'content-type': 'text/html' });
+  if (SEARCH_PATH.test(url.pathname)) {
+    res.end(searchPage(url.searchParams.get('q') || 'mixed'));
+    return;
+  }
   res.end(`<!doctype html><title>stub</title><body>${req.url}</body>`);
 });
 
@@ -85,14 +214,24 @@ const pageErrors = [];
 console.log('--- manifest ---');
 const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
 check('the localized name resolves', manifest.name, 'Filter Boost for Etsy');
-check('the localized description resolves', manifest.description.startsWith('Applies your preferred Etsy'), true);
+check('the localized description resolves', manifest.description.startsWith('Shapes Etsy search results'), true);
 check('description fits the store limit', manifest.description.length <= 132, true);
 check('permissions stay minimal', manifest.permissions.sort(), ['storage', 'webNavigation']);
 check('host access is Etsy only', manifest.host_permissions, ['*://*.etsy.com/*']);
 check('the toggle command is registered', Object.keys(manifest.commands), ['toggle-filters']);
 
+check('the content script only reaches Etsy search paths', manifest.content_scripts[0].matches, [
+  '*://*.etsy.com/search',
+  '*://*.etsy.com/search?*',
+  '*://*.etsy.com/search/*',
+  '*://*.etsy.com/*/search',
+  '*://*.etsy.com/*/search?*',
+  '*://*.etsy.com/*/search/*',
+]);
+
 console.log('\n--- navigation ---');
 const page = await browser.newPage();
+watchPage(page, pageErrors);
 
 check(
   'a new search gets every filter',
@@ -127,6 +266,125 @@ const seenUrl = await worker.evaluate(async () => {
   return tabs[0]?.url ?? null;
 });
 check('the extension can read the URL of an Etsy tab without the tabs permission', String(seenUrl).includes('/search?q=lamps'), true);
+
+console.log('\n--- hiding promoted listings ---');
+
+const allOn = { explicit: true, bestSeller: true, instantDownload: true, newest: true };
+const setSettings = (hideAds, enabled = true) =>
+  worker.evaluate((filters, hideAdsValue, enabledValue) => chrome.storage.sync.set({ settings: { enabled: enabledValue, filters, hideAds: hideAdsValue } }), allOn, hideAds, enabled);
+
+const grid = await browser.newPage();
+watchPage(grid, pageErrors);
+const hiddenCount = () => grid.$$eval('[data-filter-boost-hidden]', (els) => els.length);
+const stripLabel = () => grid.$eval('#filter-boost-strip .filter-boost-strip__label', (el) => el.textContent).catch(() => null);
+const hasStrip = async () => (await grid.$('#filter-boost-strip')) !== null;
+
+await setSettings(false);
+await sleep(300);
+await settledUrl(grid, 'http://www.etsy.com/search?q=mixed');
+await grid.bringToFront();
+await sleep(400);
+check('the fixture renders a full results grid', await grid.$$eval('#results li', (els) => els.length), 24);
+check('nothing is hidden while the feature is off', await hiddenCount(), 0);
+check('and no strip is shown', await hasStrip(), false);
+
+await setSettings(true);
+await sleep(600);
+check('turning it on hides the promoted cards without a reload', await hiddenCount(), 8);
+check('the strip reports what it removed', await stripLabel(), '8 promoted hidden');
+check('organic cards are left alone', await grid.$$eval('#results li:not([data-filter-boost-hidden])', (els) => els.length), 16);
+check(
+  'hiding wins over an important rule in the page stylesheet',
+  await grid.$$eval('[data-filter-boost-hidden]', (els) => els.every((el) => getComputedStyle(el).display === 'none')),
+  true
+);
+check(
+  'hidden cards stay in the document rather than being removed',
+  await grid.$$eval('[data-filter-boost-hidden]', (els) => els.every((el) => el.querySelector('[data-listing-id]') !== null)),
+  true
+);
+
+await grid.click('#filter-boost-strip .filter-boost-strip__button');
+await sleep(300);
+check('reveal puts them back', await hiddenCount(), 0);
+check('and the strip flips its wording', await stripLabel(), '8 promoted shown');
+
+await grid.click('#filter-boost-strip .filter-boost-strip__button');
+await sleep(300);
+check('hiding again works', await hiddenCount(), 8);
+
+await grid.click('#more');
+await sleep(600);
+check('cards appended after load are covered too', await hiddenCount(), 9);
+check('and the count follows', await stripLabel(), '9 promoted hidden');
+
+await grid.click('#renew');
+await sleep(600);
+check('a same-page result set change resets the totals', await hiddenCount(), 4);
+check('and the strip resets with it', await stripLabel(), '4 promoted hidden');
+check('reveal does not carry over into the new result set', await grid.$eval('#filter-boost-strip .filter-boost-strip__button', (el) => el.textContent), 'Show');
+
+await settledUrl(grid, 'http://www.etsy.com/search?q=allads');
+await sleep(600);
+check('a page where every card looks promoted hides nothing', await hiddenCount(), 0);
+check('and says the detector could not be trusted', await stripLabel(), 'Promoted listings could not be identified here');
+
+await settledUrl(grid, 'http://www.etsy.com/search?q=conflict');
+await sleep(600);
+check('a card carrying both an ad and an organic marker is left visible', await hiddenCount(), 4);
+
+await settledUrl(grid, 'http://www.etsy.com/search?q=topads');
+await sleep(600);
+check('ads outside the grid list are hidden too', await hiddenCount(), 19);
+check(
+  'an ad whose label is split across separate elements is still hidden',
+  await grid.$$eval('#splitlabel > li', (els) => els.every((el) => el.hasAttribute('data-filter-boost-hidden'))),
+  true
+);
+check(
+  'an ad Etsy serves with an organic attribution parameter is still hidden, because the card says Ad',
+  await grid.$$eval('#labelonly > li', (els) => els.every((el) => el.hasAttribute('data-filter-boost-hidden'))),
+  true
+);
+check(
+  'an ad card with no listing id anywhere is still hidden',
+  await grid.$$eval('#untagged > div', (els) => els.every((el) => el.hasAttribute('data-filter-boost-hidden'))),
+  true
+);
+check(
+  'and the whole ad card is hidden, not just its image link',
+  await grid.$$eval('#topads > div', (els) => els.every((el) => el.hasAttribute('data-filter-boost-hidden'))),
+  true
+);
+check(
+  'a plain title prefix on an ad card no longer vetoes the hide',
+  await grid.$$eval('#topads [id^="listing-title-"]', (els) => els.length),
+  4
+);
+
+await settledUrl(grid, 'http://www.etsy.com/de-en/search?q=mixed');
+await sleep(600);
+check('a locale-prefixed search is covered', await hiddenCount(), 8);
+
+await settledUrl(grid, 'http://www.etsy.com/searchable/thing');
+await sleep(500);
+check('lookalike paths get no content script', await hasStrip(), false);
+
+await settledUrl(grid, 'http://www.etsy.com/search?q=mixed');
+await sleep(600);
+check('back on a real search it works again', await hiddenCount(), 8);
+
+await setSettings(false);
+await sleep(600);
+check('turning it off restores every card in place', await hiddenCount(), 0);
+check('and takes the strip away', await hasStrip(), false);
+
+await setSettings(true, false);
+await sleep(600);
+check('the master switch off also stops it', await hiddenCount(), 0);
+check('with no strip left behind', await hasStrip(), false);
+
+await grid.close();
 
 console.log('\n--- per filter control ---');
 await worker.evaluate(() =>
@@ -180,10 +438,15 @@ check(
   ]
 );
 check(
-  'all switches start on',
-  await popup.$$eval('.switch-input', (inputs) => inputs.every((input) => input.checked)),
+  'the URL filter switches start on',
+  await popup.$$eval('#filters .switch-input', (inputs) => inputs.every((input) => input.checked)),
   true
 );
+check('ad hiding starts off', await popup.$eval('#hideAds', (el) => el.checked), false);
+check('the two groups are labelled', await popup.$$eval('.group-label', (els) => els.map((el) => el.textContent)), [
+  'Added to the search URL',
+  'On the results page',
+]);
 check('the status line renders', await popup.$eval('#statusText', (el) => el.textContent.length > 0), true);
 check('the disclaimer is present', await popup.$eval('.disclaimer', (el) => el.textContent), 'Not affiliated with Etsy, Inc. Etsy is a trademark of Etsy, Inc.');
 check('no string is left untranslated', await popup.$$eval('[data-i18n]', (els) => els.every((el) => el.textContent.trim().length > 0)), true);
@@ -201,6 +464,21 @@ check(
   true
 );
 
+await popup.click('label[for="hideAds"]');
+await sleep(300);
+check(
+  'toggling ad hiding writes it to sync storage',
+  await worker.evaluate(async () => (await chrome.storage.sync.get('settings')).settings.hideAds),
+  true
+);
+await popup.click('label[for="hideAds"]');
+await sleep(300);
+check(
+  'and toggling it back off writes that too',
+  await worker.evaluate(async () => (await chrome.storage.sync.get('settings')).settings.hideAds),
+  false
+);
+
 await popup.click('label[for="master"]');
 await sleep(300);
 check(
@@ -213,6 +491,7 @@ check(
   await popup.$$eval('#filters .switch-input', (inputs) => inputs.every((input) => input.disabled)),
   true
 );
+check('the ad hiding row is disabled too', await popup.$eval('#hideAds', (el) => el.disabled), true);
 check('the status reports the off state', await popup.$eval('#statusText', (el) => el.textContent), 'Filters are turned off');
 
 console.log('\n--- live status and apply ---');

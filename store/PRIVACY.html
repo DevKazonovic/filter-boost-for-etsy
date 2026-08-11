@@ -30,7 +30,7 @@
   </head>
   <body>
     <h1>Privacy policy</h1>
-    <p class="updated">Filter Boost for Etsy, version 1.0.0</p>
+    <p class="updated">Filter Boost for Etsy, version 1.2.0</p>
 
     <h2>The short version</h2>
     <p>
@@ -41,8 +41,8 @@
     <h2>What the extension stores</h2>
     <ul>
       <li>
-        <strong>Your settings.</strong> The master on/off switch and one flag per filter, kept in Chrome's
-        extension storage. If you are signed into Chrome, Chrome itself syncs them to your other devices.
+        <strong>Your settings.</strong> The master on/off switch, one flag per filter, and whether promoted
+        listings are hidden, kept in Chrome's extension storage. If you are signed into Chrome, Chrome itself syncs them to your other devices.
         They are never sent to the developer.
       </li>
       <li>
@@ -54,15 +54,28 @@
 
     <h2>What the extension can see</h2>
     <p>
-      The extension is granted access to <code>etsy.com</code> only. It observes the start of navigations
-      to Etsy search URLs so it can add your chosen filter parameters before the page loads. It has no
-      content script, never reads the contents of any page, and cannot see any other website.
+      The extension is granted access to <code>etsy.com</code> only, and cannot see any other website.
+    </p>
+    <p>
+      It observes the start of navigations to Etsy search URLs so it can add your chosen filter parameters
+      before the page loads.
+    </p>
+    <p>
+      On Etsy search result pages, and only there, it also reads the page in order to find the listing cards
+      Etsy has labelled as promoted, so it can hide them when you have asked it to. That reading happens
+      entirely inside your browser, on a page you opened yourself. Nothing read from the page is stored, kept
+      after you leave the page, or transmitted anywhere. The extension makes no network requests of its own,
+      and never clicks, favourites, adds to cart, or otherwise interacts with Etsy on your behalf.
     </p>
 
     <h2>What it does not do</h2>
     <ul>
       <li>No personally identifiable information, no location, no authentication data, no financial data.</li>
       <li>No browsing history collection and no logging of your searches.</li>
+      <li>
+        No retention of anything read from an Etsy page. Counts shown on the results page are recomputed each
+        time and discarded when you leave.
+      </li>
       <li>No selling or sharing of data, because none is collected.</li>
       <li>No advertising and no third-party services of any kind.</li>
     </ul>
